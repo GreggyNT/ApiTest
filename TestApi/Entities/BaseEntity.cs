@@ -5,6 +5,5 @@ namespace TestApi.Entities;
 public class BaseEntity
 {
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-    
-    public Guid Id { get; set; }
+    public long Id { get; set; }
 }
