@@ -13,8 +13,6 @@ public class EventRepository:IEventRepository
     {
         _apiContext = apiContext;
     }
-
-
     public IEnumerable<Event> GetAll() => _apiContext.Events;
 
 
@@ -24,9 +22,10 @@ public class EventRepository:IEventRepository
        return res ?? null;
     }
 
-    public async void Create(Event item)
+    public async Task<Event?> Create(Event item)
     {
         await _apiContext.Events.AddAsync(item);
+        return await Get(item.Id);
     }
 
     public void Update(Event item)
@@ -34,7 +33,7 @@ public class EventRepository:IEventRepository
         _apiContext.Events.Update(item);
     }
 
-    public async void Delete(long id)
+    public async Task Delete(long id)
     {
         var res = await _apiContext.Events.FindAsync(id);
         if (res != null)

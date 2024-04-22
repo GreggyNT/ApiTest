@@ -7,7 +7,7 @@ using TestApi.Services.Repo_Unit.Interfaces;
 
 namespace TestApi.Services.Repo_Unit;
 
-public class ParticipantRepository:IParticipantRepository
+public class ParticipantRepository:IRepository<Participant>
 {
     private readonly ApiContext _apiContext;
     
@@ -17,15 +17,16 @@ public class ParticipantRepository:IParticipantRepository
     }
 
 
-    public async Task<ParticipantDto?> Get(long id)
+    public async Task<Participant?> Get(long id)
     {
         var res = await _apiContext.Participants.FindAsync(id);
-        return res.Adapt<ParticipantDto>();
+        return res;
     }
 
-    public async void Create(Participant item)
+    public async Task<Participant?> Create(Participant item)
     {
         await _apiContext.Participants.AddAsync(item);
+        return await Get(item.Id);
     }
 
     public void Update(Participant item)
@@ -33,7 +34,7 @@ public class ParticipantRepository:IParticipantRepository
         _apiContext.Participants.Update(item);
     }
 
-    public async void Delete(long id)
+    public async Task Delete(long id)
     {
         var res = await _apiContext.Participants.FindAsync(id);
         if (res != null)
