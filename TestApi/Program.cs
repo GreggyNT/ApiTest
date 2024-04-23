@@ -1,11 +1,14 @@
+using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using TestApi.Context;
+using TestApi.Dtos;
 using TestApi.Entities;
 using TestApi.Services;
 using TestApi.Services.ExceptionHandler;
 using TestApi.Services.Repo_Unit;
 using TestApi.Services.Repo_Unit.Interfaces;
+using TestApi.Services.Validators;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,6 +22,7 @@ builder.Services.AddDbContext<ApiContext>(opt => opt.UseNpgsql("Server=localhost
 builder.Services.AddTransient<IEventRepository, EventRepository>();
 builder.Services.AddTransient<IEventParticipantRepository, EventParticipantRepository>();
 builder.Services.AddTransient<IRepository<Participant>, ParticipantRepository>();
+builder.Services.AddTransient<IValidator<EventDto>, EventValidator>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

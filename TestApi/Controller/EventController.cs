@@ -1,3 +1,4 @@
+using FluentValidation;
 using Mapster;
 using Microsoft.AspNetCore.Mvc;
 using TestApi.Dtos;
@@ -13,11 +14,13 @@ public class EventController:ControllerBase
 {
     private IEventRepository _eventRepository;
     private IRedisHash _redisHash;
+    IValidator<EventDto> _validator;
     
-    public EventController(IEventRepository eventrepo, IRedisHash redisHash)
+    public EventController(IEventRepository eventrepo, IRedisHash redisHash,IValidator<EventDto> validator)
     {
         _eventRepository = eventrepo;
         _redisHash = redisHash;
+        _validator = validator;
     }
 
     [HttpGet]
@@ -35,18 +38,26 @@ public class EventController:ControllerBase
     [ProducesResponseType(StatusCodes.Status201Created)]
     public async Task<ActionResult<EventDto>> Create([FromBody] EventDto eventDto)
     {
-        await _eventRepository.Create(eventDto.Adapt<Event>());
-        await _eventRepository.Save();
-        return Ok();
+        if (_validator.Validate(eventDto).IsValid)
+        {
+            await _eventRepository.Create(eventDto.Adapt<Event>());
+            await _eventRepository.Save();
+            return Ok();
+        }
+        return BadRequest(eventDto);
     }
 
     [HttpPut]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<EventDto>> Update([FromBody] EventDto eventDto)
     { 
-        _eventRepository.Update(eventDto.Adapt<Event>());
-        await _eventRepository.Save();
-        return Ok(eventDto);
+        if (_validator.Validate(eventDto).IsValid)
+        { 
+            _eventRepository.Update(eventDto.Adapt<Event>());
+            await _eventRepository.Save();
+            return Ok(eventDto);
+        }
+        return BadRequest(eventDto);
     }
 
     [HttpDelete]
@@ -59,7 +70,7 @@ public class EventController:ControllerBase
         return NoContent();
     }
 
-    [HttpGet("{dateTime}/{location}/{category}")]
+    [HttpGet("{dateTime}-{location}-{category}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<IEnumerable<EventDto>> GetByParametres(DateTime dateTime, string location,
         string category) => Ok(_eventRepository.Get(dateTime, location, category));
